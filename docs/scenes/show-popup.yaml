@@ -1,0 +1,7 @@
+site: http://127.0.0.1:7799/connect.html
+steps:
+  - browser.click: "#open-help"
+  - browser.showPopup: /help            # url picks the popup; default: the newest
+  - browser.click: "#next"              # acts in the popup, on camera
+  - caption: The popup, filmed in the browser panel
+  - wait: 1000

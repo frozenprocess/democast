@@ -1,0 +1,400 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  :root { --bg:#0e1116; --panel:#161b22; --chrome:#21262d; --line:#30363d; --fg:#e6edf3; --dim:#8b949e;
+    --accent:#7ee787; --out:#79c0ff; --term-font:21px; --cs:1; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; overflow:hidden; background:var(--bg); color:var(--fg); font-family: "Inter", system-ui, sans-serif; }
+  #caption { position:absolute; text-align:center; font-weight:700; letter-spacing:-0.5px;
+    transition: opacity .4s; }
+  #caption small { display:block; font-weight:400; color:var(--dim); margin-top:8px; }
+  .win { position:absolute; background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .win.off { display:none; }
+  /* Focus layouts show one panel at a time. */
+  .focus .win { transition: opacity .45s, transform .45s cubic-bezier(.4,0,.2,1); }
+  .focus .win.away { opacity:0; transform: translateX(-60px) scale(.97); pointer-events:none; }
+  .focus #term.away, .focus #term2.away { transform: translateX(60px) scale(.97); }
+  /* view: one panel takes the one-panel rectangle, the other fades out (see stage.view). */
+  .viewing .win { transition: opacity .45s, left .55s cubic-bezier(.4,0,.2,1), top .55s cubic-bezier(.4,0,.2,1),
+    width .55s cubic-bezier(.4,0,.2,1), height .55s cubic-bezier(.4,0,.2,1); }
+  .viewing .win.hidden { opacity:0; pointer-events:none; }
+  /* --sources: one window alone, full frame, no window chrome (see stage.init). */
+  .source .win { border:0; border-radius:0; box-shadow:none; }
+  .source .bar, .source #caption, .source #card { display:none; }
+  .source #frameWrap { background:var(--bg); }
+  .bar { height:46px; display:flex; align-items:center; gap:9px; padding:0 16px; background:var(--chrome);
+    border-bottom:1px solid var(--line); }
+  .dot { width:13px; height:13px; border-radius:50%; flex:none; } .r{background:#ff5f57}.y{background:#febc2e}.g{background:#28c840}
+  .url { margin-left:18px; flex:1; min-width:0; background:var(--bg); border-radius:8px; padding:6px 14px; font-size:17px;
+    color:var(--fg); font-family: ui-monospace, monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .title { margin-left:14px; color:var(--dim); font-size:17px; font-family: ui-monospace, monospace; }
+  #frameWrap { position:relative; overflow:hidden; background:#fff; }
+  #site { display:block; }
+  /* Remix: the canvas holds a whole page and is moved and scaled so a zoom
+     box fills the window (stage.siteBox). */
+  #site.boxed { transform-origin:0 0; transition: transform .7s cubic-bezier(.4,0,.2,1); }
+  #termBody, #term2Body { padding:20px 24px; font-family: "JetBrains Mono", ui-monospace, monospace; font-size:var(--term-font);
+    line-height:1.5; white-space:pre-wrap; word-break:break-all; overflow:hidden; }
+  .prompt { color:var(--accent); } .out { color:var(--out); } .err { color:var(--dim); }
+  .caret { display:inline-block; width:.52em; height:1.15em; background:var(--fg); vertical-align:-.2em;
+    animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  #cursor { position:absolute; left:0; top:0; width:30px; height:30px; z-index:10; pointer-events:none;
+    transition: transform .7s cubic-bezier(.4,0,.2,1), opacity .3s; opacity:0; }
+  #cursor .ring { position:absolute; left:-14px; top:-14px; width:28px; height:28px; border-radius:50%;
+    background:rgba(121,192,255,.45); transform:scale(0); transition: transform .15s; }
+  #cursor.click .ring { transform:scale(1.6); }
+  #card { position:absolute; inset:0; background:var(--bg); display:flex; flex-direction:column; align-items:center;
+    justify-content:center; text-align:center; padding:60px; z-index:20; transition: opacity .6s; }
+  #card.hidden { opacity:0; pointer-events:none; }
+  #card img { image-rendering:pixelated; max-width:calc(var(--cs)*180px); max-height:calc(var(--cs)*180px); margin-bottom:calc(var(--cs)*26px); }
+  #card h1 { font-size:calc(var(--cs)*88px); margin:0; letter-spacing:-2px; line-height:1.1; }
+  #card .sub { font-size:calc(var(--cs)*34px); color:var(--dim); margin:calc(var(--cs)*20px) 0 0; line-height:1.4; white-space:pre-line; }
+  #card .link { margin-top:calc(var(--cs)*44px); font-family: ui-monospace, monospace; font-size:calc(var(--cs)*38px); color:var(--accent);
+    background:var(--panel); border:1px solid var(--line); padding:16px 32px; border-radius:12px; }
+  #card .pills { max-width:100%; margin-top:calc(var(--cs)*30px); display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
+  #card .pills span { font-size:calc(var(--cs)*26px); border:1px solid var(--line); border-radius:999px; padding:8px 22px; }
+  #card .footer { font-size:calc(var(--cs)*26px); color:var(--dim); margin-top:calc(var(--cs)*34px); }
+  #guides { position:absolute; inset:0; z-index:30; pointer-events:none; }
+  #guides div { position:absolute; background:rgba(255,40,40,.28); outline:1px dashed rgba(255,80,80,.9); }
+</style></head>
+<body>
+<div id="caption"></div>
+
+<div class="win" id="browser">
+  <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="url" id="url"></span></div>
+  <!-- The site runs in its own browser; its frames are painted here. -->
+  <div id="frameWrap"><canvas id="site"></canvas></div>
+</div>
+
+<div class="win" id="term">
+  <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="title" id="termTitle"></span></div>
+  <div id="termBody"></div>
+</div>
+
+<!-- A second terminal, for scenes with steps on pane 2. -->
+<div class="win" id="term2">
+  <div class="bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="title" id="term2Title"></span></div>
+  <div id="term2Body"></div>
+</div>
+
+<div id="cursor"><div class="ring"></div>
+  <svg width="30" height="30" viewBox="0 0 24 24"><path d="M3 2l7 19 2.6-7.4L20 11z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg>
+</div>
+
+<div id="card" class="hidden"></div>
+<div id="guides"></div>
+
+<script>
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+let BAR = 46; // the title bar's height; init takes cfg.bar
+
+// Each terminal pane ("term", "term2") has its own body and caret.
+const carets = {};
+const body = (pane = 'term') => $(pane + 'Body');
+function place(el, r) {
+  Object.assign(el.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+}
+// rand is a seeded random number generator (mulberry32), so typing has
+// the same rhythm every time the same calls are made: a take rendered
+// afterwards (democast --smooth) replays the live run's calls and must
+// type in step with them.
+let seed = 1;
+function rand() {
+  seed = (seed + 0x6D2B79F5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+function tail(pane = 'term') {
+  if (!carets[pane]) { carets[pane] = document.createElement('span'); carets[pane].className = 'caret'; }
+  body(pane).append(carets[pane]);
+  body(pane).scrollTop = body(pane).scrollHeight;
+}
+
+window.stage = {
+  // init lays out the stage for one output format. cfg comes from the runner.
+  init(cfg) {
+    BAR = cfg.bar ?? BAR;
+    document.documentElement.style.width = document.body.style.width = cfg.w + 'px';
+    document.documentElement.style.height = document.body.style.height = cfg.h + 'px';
+    for (const [k, v] of Object.entries(cfg.theme || {})) document.documentElement.style.setProperty('--' + k, v);
+    document.documentElement.style.setProperty('--term-font', cfg.termFont + 'px');
+    const cap = $('caption');
+    cap.style.top = cfg.caption.top + 'px';
+    cap.style.fontSize = cfg.caption.size + 'px';
+    cap.dataset.sub = cfg.caption.sub;
+    cap.style.left = cfg.caption.left + 'px';
+    cap.style.right = cfg.caption.right + 'px';
+    document.documentElement.style.setProperty('--cs', cfg.cardScale);
+    if (cfg.card) {
+      const c = cfg.card;
+      $('card').style.padding = `${c.top}px ${c.right}px ${c.bottom}px ${c.left}px`;
+    }
+    document.body.classList.toggle('focus', cfg.focus);
+    if (cfg.guides && cfg.safe) this.drawGuides(cfg);
+
+    $('browser').classList.toggle('off', !cfg.browser);
+    $('term').classList.toggle('off', !cfg.term);
+    $('term2').classList.toggle('off', !cfg.term2);
+    if (cfg.browser) {
+      const b = cfg.browser;
+      place($('browser'), b);
+      Object.assign($('frameWrap').style, { width: b.w + 'px', height: (b.h - BAR) + 'px' });
+      // Device-resolution backing store, so the site stays sharp at 4K.
+      const c = $('site');
+      c.width = Math.round(b.w * devicePixelRatio);
+      c.height = Math.round((b.h - BAR) * devicePixelRatio);
+      Object.assign(c.style, { width: b.w + 'px', height: (b.h - BAR) + 'px' });
+    }
+    if (cfg.term) {
+      place($('term'), cfg.term);
+      $('termBody').style.height = (cfg.term.h - BAR) + 'px';
+      $('termBody').style.paddingRight = (24 + cfg.termPadRight) + 'px';
+      $('termTitle').textContent = cfg.termTitle;
+      this.prompt();
+    }
+    if (cfg.term2) {
+      place($('term2'), cfg.term2);
+      $('term2Body').style.height = (cfg.term2.h - BAR) + 'px';
+      $('term2Body').style.paddingRight = (24 + cfg.termPadRight) + 'px';
+      $('term2Title').textContent = cfg.term2Title;
+      this.prompt('term2');
+    }
+    if (cfg.focus) this.focus('browser', true);
+    this.views = cfg.views;
+    document.body.classList.toggle('viewing', Boolean(cfg.views));
+    const src = cfg.source ?? window.__democastSource;
+    if (src) this.initSource(cfg, src);
+  },
+  // initSource lays the stage out for one window alone, full frame
+  // (democast --sources): the site's page (fitted, with the pointer), or a
+  // terminal pane with its font scaled up by as much as the window grows.
+  initSource(cfg, src) {
+    this.source = src;
+    document.body.classList.add('source');
+    document.body.classList.remove('viewing');
+    const full = { x: 0, y: 0, w: cfg.w, h: cfg.h };
+    for (const p of ['browser', 'term', 'term2']) $(p).classList.toggle('off', p !== src);
+    if (src === 'browser') {
+      place($('browser'), full);
+      Object.assign($('frameWrap').style, { width: cfg.w + 'px', height: cfg.h + 'px' });
+      const c = $('site');
+      c.width = Math.round(cfg.w * devicePixelRatio);
+      c.height = Math.round(cfg.h * devicePixelRatio);
+      Object.assign(c.style, { width: cfg.w + 'px', height: cfg.h + 'px' });
+      const b = cfg.browser;
+      // Where the site was on the composite stage, to map pointer moves.
+      this.vsite = { x: b.x, y: b.y + BAR, w: b.w, h: b.h - BAR };
+      this.fit = full;
+    } else {
+      const r = cfg[src];
+      const k = Math.min(cfg.w / r.w, cfg.h / r.h);
+      document.documentElement.style.setProperty('--term-font', (cfg.termFont * k) + 'px');
+      place($(src), full);
+      $(src + 'Body').style.height = cfg.h + 'px';
+      this.hideCursor();
+    }
+  },
+  // focus shows one panel in focus layouts; elsewhere it does nothing.
+  async focus(name, instant) {
+    if (!document.body.classList.contains('focus') || this.focused === name) return;
+    this.focused = name;
+    $('browser').classList.toggle('away', name !== 'browser');
+    $('term').classList.toggle('away', name !== 'term');
+    $('term2').classList.toggle('away', name !== 'term2');
+    if (name !== 'browser') this.hideCursor();
+    if (!instant) await sleep(500);
+  },
+  // view shows one panel in the one-panel rectangle ("browser" or "term"),
+  // or both side by side again ("both"). The site canvas takes the new size
+  // at once (the site sends frames at that size from now on); the window
+  // around it animates.
+  async view(name, instant) {
+    if (this.source) {
+      const r = this.views?.[name]?.browser;
+      if (r) this.vsite = { x: r.x, y: r.y + BAR, w: r.w, h: r.h - BAR };
+      if (this.source !== 'browser' || !this.views?.[name]?.browser) this.hideCursor();
+      return;
+    }
+    if (!this.views || this.viewed === name) return;
+    const v = this.views[name];
+    const was = this.viewed ?? 'both';
+    this.viewed = name;
+    for (const p of ['browser', 'term']) {
+      const el = $(p);
+      if (instant) el.style.transition = 'none';
+      if (v[p]) {
+        place(el, v[p]);
+        if (p === 'browser') {
+          Object.assign($('frameWrap').style, { width: v[p].w + 'px', height: (v[p].h - BAR) + 'px' });
+          const c = $('site');
+          const w = Math.round(v[p].w * devicePixelRatio), h = Math.round((v[p].h - BAR) * devicePixelRatio);
+          if (c.width !== w || c.height !== h) {
+            // Keep the last frame on screen until the new size arrives.
+            const old = document.createElement('canvas');
+            old.width = c.width; old.height = c.height;
+            old.getContext('2d').drawImage(c, 0, 0);
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(old, 0, 0);
+          }
+          Object.assign(c.style, { width: v[p].w + 'px', height: (v[p].h - BAR) + 'px' });
+        } else {
+          $('termBody').style.height = (v[p].h - BAR) + 'px';
+          body('term').scrollTop = body('term').scrollHeight;
+        }
+      }
+      el.classList.toggle('hidden', !v[p]);
+      if (instant) { void el.offsetWidth; el.style.transition = ''; }
+    }
+    if (!v.browser) this.hideCursor();
+    if (!instant && was !== name) await sleep(600);
+  },
+  // drawGuides shades the areas a platform's UI covers.
+  drawGuides(cfg) {
+    const s = cfg.safe;
+    const boxes = [
+      { x: 0, y: 0, w: cfg.w, h: s.top },
+      { x: 0, y: cfg.h - s.bottom, w: cfg.w, h: s.bottom },
+      { x: 0, y: s.top, w: s.left, h: cfg.h - s.top - s.bottom },
+      { x: cfg.w - s.right, y: s.top, w: s.right, h: cfg.h - s.top - s.bottom },
+    ];
+    if (s.rail) boxes.push({ x: cfg.w - s.rail.w, y: s.rail.y, w: s.rail.w - s.right, h: cfg.h - s.bottom - s.rail.y });
+    for (const b of boxes) {
+      const d = document.createElement('div');
+      place(d, b);
+      $('guides').append(d);
+    }
+  },
+  setUrl(url) { $('url').textContent = url; },
+  // siteFrame paints one frame of the site (a base64 JPEG), scaled to the
+  // panel. It resolves once drawn, which paces the frames sent to it.
+  async siteFrame(b64) {
+    const blob = await (await fetch('data:image/jpeg;base64,' + b64)).blob();
+    const bmp = await createImageBitmap(blob);
+    const c = $('site');
+    if (this.source === 'browser') {
+      // Fit the page into the frame, centered, whatever its shape.
+      const k = Math.min(c.width / bmp.width, c.height / bmp.height);
+      const w = bmp.width * k, h = bmp.height * k, x = (c.width - w) / 2, y = (c.height - h) / 2;
+      const g = c.getContext('2d');
+      g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#000';
+      g.fillRect(0, 0, c.width, c.height);
+      g.drawImage(bmp, x, y, w, h);
+      const d = devicePixelRatio;
+      this.fit = { x: x / d, y: y / d, w: w / d, h: h / d };
+    } else if (this.box) {
+      // Remix: the whole page, at its own resolution; siteBox places it.
+      if (c.width !== bmp.width || c.height !== bmp.height) {
+        c.width = bmp.width; c.height = bmp.height;
+        this.placeBox(true);
+      }
+      c.getContext('2d').drawImage(bmp, 0, 0);
+    } else if (Math.abs(bmp.width / bmp.height - c.width / c.height) < 0.02) {
+      // Right after a view: change, frames at the old size can still
+      // arrive; skip them rather than stretch them (the last frame stays up).
+      c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    }
+    bmp.close();
+    this.siteFrames = (this.siteFrames ?? 0) + 1;
+  },
+
+  // siteBox (remix) shows one box of the page, { x, y, w, h } in
+  // fractions of it, filling the window; moving from one box to another
+  // pans and zooms, unless instant.
+  siteBox(box, instant) {
+    this.box = box;
+    this.placeBox(instant);
+  },
+  placeBox(instant) {
+    const c = $('site'), b = this.box, wrap = $('frameWrap');
+    const W = parseFloat(wrap.style.width), H = parseFloat(wrap.style.height);
+    // The canvas laid out as the whole page at the window's width, then
+    // scaled so the box's width fills the window.
+    const pw = W, ph = W * (c.height / c.width), k = 1 / b.w;
+    c.classList.add('boxed');
+    if (instant) c.style.transition = 'none';
+    Object.assign(c.style, { width: pw + 'px', height: ph + 'px',
+      transform: `translate(${-b.x * pw * k}px, ${-b.y * ph * k}px) scale(${k})` });
+    if (instant) { void c.offsetWidth; c.style.transition = ''; }
+  },
+  // termReset and termTitle (remix) start a terminal window over.
+  termReset(pane) { body(pane).textContent = ''; tail(pane); },
+  termTitle(text, pane = 'term') { $(pane + 'Title').textContent = text; },
+
+  card(c) {
+    const parts = [];
+    if (c.image) parts.push(`<img src="${esc(c.image)}">`);
+    if (c.title) parts.push(`<h1>${esc(c.title)}</h1>`);
+    if (c.sub) parts.push(`<p class="sub">${esc(c.sub)}</p>`);
+    if (c.link) parts.push(`<div class="link">${esc(c.link)}</div>`);
+    if (c.pills) parts.push(`<div class="pills">${c.pills.map((p) => `<span>${esc(p)}</span>`).join('')}</div>`);
+    if (c.footer) parts.push(`<p class="footer">${esc(c.footer)}</p>`);
+    $('card').innerHTML = parts.join('');
+    $('card').classList.remove('hidden');
+  },
+  hideCard() { $('card').classList.add('hidden'); },
+
+  async caption(text, sub) {
+    const c = $('caption');
+    c.style.opacity = 0;
+    await sleep(400);
+    c.innerHTML = esc(text || '') + (sub ? `<small style="font-size:${c.dataset.sub}px">${esc(sub)}</small>` : '');
+    c.style.opacity = 1;
+  },
+
+  // The terminal functions take the pane last: "term" (default) or "term2".
+  prompt(pane) { this.print('$ ', 'prompt', pane); },
+  async type(text, cps, pane) {
+    const s = document.createElement('span');
+    body(pane).append(s);
+    tail(pane);
+    for (const ch of text) {
+      s.textContent += ch;
+      tail(pane);
+      await sleep(1000 / cps * (0.6 + rand() * 0.8));
+    }
+  },
+  print(text, cls, pane) {
+    const s = document.createElement('span');
+    if (cls) s.className = cls;
+    s.textContent = text;
+    body(pane).append(s);
+    tail(pane);
+  },
+  // atLineStart reports whether the terminal's last output ended a line.
+  atLineStart(pane) { return /\n$/.test(body(pane).textContent) || body(pane).textContent === ''; },
+  clear(pane) { body(pane).textContent = ''; this.prompt(pane); },
+
+  // siteRect returns the site panel's on-screen rectangle.
+  siteRect() { const r = $('site').getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; },
+  async moveTo(x, y) {
+    if (this.source && this.source !== 'browser') return;
+    if (this.source === 'browser') {
+      // From the composite stage to where the page sits in this frame.
+      const v = this.vsite, f = this.fit;
+      x = f.x + ((x - v.x) / v.w) * f.w;
+      y = f.y + ((y - v.y) / v.h) * f.h;
+    }
+    const c = $('cursor');
+    c.style.opacity = 1;
+    c.style.transform = `translate(${x}px,${y}px)`;
+    await sleep(750);
+  },
+  hideCursor() { $('cursor').style.opacity = 0; },
+  async clickFx() {
+    const c = $('cursor');
+    c.classList.add('click');
+    await sleep(180);
+    c.classList.remove('click');
+    await sleep(120);
+  },
+};
+</script>
+</body></html>

@@ -1,0 +1,7 @@
+site: http://127.0.0.1:7799/account.html
+browser:
+  blur: [".user-email"]                 # from the first paint of every page
+steps:
+  - browser.blur: ".invoice-total"      # on demand
+  - caption: Blurred by selector
+  - wait: 1500

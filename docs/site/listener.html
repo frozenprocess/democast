@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Listener</title><link rel="stylesheet" href="/site.css">
+<header><b>Acme Notes</b><a href="/">Home</a><a href="/docs.html">Docs</a><a href="/app.html">App</a><a href="/account.html">Account</a></header>
+<main>
+<h1>Listener</h1>
+<div class="card"><button id="create-listener">Create listener</button> <p>Address: <code id="listen-addr"></code></p></div>
+<div class="card"><label for="send-addr">Send to</label><input id="send-addr" autocomplete="off"><button id="send">Send</button> <span id="sent" class="ok"></span></div>
+<script>
+create_listener = document.getElementById("create-listener");
+create_listener.onclick = () => { document.getElementById("listen-addr").textContent = "100.64.0.7:4000"; };
+document.getElementById("send").onclick = () => { document.getElementById("sent").textContent = "Sent to " + document.getElementById("send-addr").value; };
+</script>
+</main>

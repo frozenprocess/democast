@@ -1,0 +1,6 @@
+site: http://127.0.0.1:7799/
+steps:
+  - caption: { text: Acme Notes, sub: "A demo site for democast's examples" }
+  - wait: 1500
+  - browser.click: "#get-started"
+  - wait: 1500

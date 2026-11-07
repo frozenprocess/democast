@@ -1,0 +1,10 @@
+site: http://127.0.0.1:7799/
+steps:
+  - caption: Thanks for watching
+  - wait: 800
+  - card:
+      title: Try it now
+      link: acme.test
+      pills: [Free, No account, Open source]
+      footer: github.com/acme/notes
+  - wait: 2500

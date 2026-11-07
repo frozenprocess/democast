@@ -1,0 +1,8 @@
+site: http://127.0.0.1:7799/listener.html
+formats: [9x16]
+layout: both          # stack the two panels (browser above terminal) instead
+steps:
+  - caption: Stacked
+  - browser.click: "#create-listener"
+  - term.run: "echo stacked"
+  - wait: 800

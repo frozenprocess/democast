@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>democast editor</title>
+<style>
+  :root {
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2129; --line:#30363d; --fg:#e6edf3; --dim:#8b949e; --faint:#6e7681;
+    --accent:#58a6ff; --cut:#f85149; --speed:#d29922; --text:#a371f7; --ok:#3fb950;
+    --browser:#2f81f7; --term:#3fb950; --stage:#8b949e; --say:#db61a2;
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--fg);
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display:grid; grid-template-rows:auto minmax(0, 1fr) auto; grid-template-columns:minmax(0, 1fr); overflow:hidden; }
+  button, select, input { font:inherit; color:inherit; }
+  button { background:var(--panel2); border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; }
+  button:hover:not(:disabled) { border-color:var(--faint); }
+  button:disabled { opacity:.45; cursor:default; }
+  button.primary { background:#238636; border-color:#2ea043; }
+  button.primary:hover:not(:disabled) { background:#2ea043; }
+  select, input[type=text], input[type=number] { min-width:0; width:100%; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 7px; }
+  kbd { font: 11px ui-monospace, monospace; border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0 4px; color:var(--dim); }
+
+  header { display:flex; align-items:center; gap:10px; min-width:0; padding:8px 14px; border-bottom:1px solid var(--line); background:var(--panel); }
+  header h1 { font-size:14px; margin:0 6px 0 0; font-weight:600; }
+  header .scene { color:var(--dim); font-family: ui-monospace, monospace; font-size:12px; }
+  #takes { display:flex; gap:4px; }
+  #takes button { padding:4px 9px; font-size:12px; }
+  #takes button.on { border-color:var(--accent); color:var(--accent); }
+  header .spacer { flex:1; }
+  #status { color:var(--dim); font-size:12px; max-width:420px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #status.err { color:var(--cut); }
+  #status.ok { color:var(--ok); }
+
+  main { display:grid; grid-template-columns: minmax(0, 1fr) 300px; min-height:0; min-width:0; }
+  #stageArea { display:flex; flex-direction:column; min-height:0; min-width:0; padding:12px; gap:8px; }
+  #banner { display:none; background:#3d2a00; border:1px solid #9e6a03; color:#f0c674; border-radius:6px; padding:6px 10px; }
+  #viewer { flex:1; min-height:0; min-width:0; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; }
+  #frame { position:relative; max-width:100%; max-height:100%; background:#000; box-shadow:0 0 0 1px var(--line); }
+  #frame video { display:block; width:100%; height:100%; }
+  #overlay { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  #overlay .t { position:absolute; left:0; right:0; display:flex; justify-content:center; }
+  #overlay .t span { background:rgba(0,0,0,.7); color:#fff; font-weight:700; white-space:pre; }
+  #cutFlash { position:absolute; inset:0; pointer-events:none; border:3px solid var(--cut); opacity:0; transition:opacity .2s; }
+  #transport { display:flex; align-items:center; gap:10px; }
+  #transport .time { font-family: ui-monospace, monospace; color:var(--dim); }
+  #transport .time b { color:var(--fg); font-weight:500; }
+  #transport label { color:var(--dim); display:flex; align-items:center; gap:5px; cursor:pointer; }
+
+  aside { border-left:1px solid var(--line); background:var(--panel); overflow:auto; padding:12px; display:flex; flex-direction:column; gap:16px; }
+  aside h2 { font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:0 0 8px; font-weight:600; }
+  .field { display:grid; grid-template-columns: 70px minmax(0, 1fr); align-items:center; gap:6px 8px; margin-bottom:6px; }
+  .field label { color:var(--dim); }
+  .anchor { grid-column: 2; color:var(--faint); font-size:11px; font-family: ui-monospace, monospace; margin-top:-3px; }
+  .muted { color:var(--dim); }
+  .row { display:flex; gap:6px; flex-wrap:wrap; }
+  input[type=range] { width:100%; accent-color: var(--accent); }
+  #warnings div { background:#2d1b00; border:1px solid #6e4b00; color:#e3b341; border-radius:6px; padding:6px 8px; margin-bottom:6px; cursor:pointer; font-size:12px; }
+  #warnings .none { background:none; border:none; color:var(--faint); padding:0; cursor:default; }
+  .keys { display:grid; grid-template-columns:auto 1fr; gap:4px 10px; color:var(--dim); font-size:12px; }
+
+  footer { border-top:1px solid var(--line); background:var(--panel); display:flex; flex-direction:column; height:300px; min-height:0; }
+  #tools { display:flex; align-items:center; gap:8px; padding:6px 12px; border-bottom:1px solid var(--line); }
+  #tools .sep { width:1px; height:20px; background:var(--line); }
+  #tools .tool.cut { border-color: color-mix(in srgb, var(--cut) 60%, transparent); }
+  #tools .tool.speed { border-color: color-mix(in srgb, var(--speed) 60%, transparent); }
+  #tools .tool.text { border-color: color-mix(in srgb, var(--text) 60%, transparent); }
+  #tools label { color:var(--dim); display:flex; align-items:center; gap:6px; }
+  #zoom { width:120px; }
+  #outInfo { margin-left:auto; color:var(--dim); font-family: ui-monospace, monospace; font-size:12px; }
+
+  #scroller { flex:1; overflow-x:auto; overflow-y:hidden; position:relative; }
+  #tracks { position:relative; height:100%; min-width:100%; }
+  .lane { position:absolute; left:0; right:0; border-bottom:1px solid #21262d; }
+  .laneName { position:sticky; left:0; z-index:6; display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--faint); background:var(--panel); padding:1px 6px; border-radius:0 0 4px 0; }
+  #ruler { top:0; height:26px; background:var(--panel2); cursor:col-resize; }
+  #ruler .tick { position:absolute; top:12px; bottom:0; border-left:1px solid var(--line); }
+  #ruler .tick span { position:absolute; left:3px; top:-12px; font-size:10px; color:var(--faint); font-family: ui-monospace, monospace; }
+  .block { position:absolute; top:18px; bottom:5px; border-radius:4px; padding:2px 5px; font-size:11px; white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis; color:#fff; min-width:3px; }
+  .block.k-browser { background: color-mix(in srgb, var(--browser) 45%, var(--panel)); }
+  .block.k-term { background: color-mix(in srgb, var(--term) 40%, var(--panel)); }
+  .block.k-stage { background: color-mix(in srgb, var(--stage) 30%, var(--panel)); }
+  .block.k-say { background: color-mix(in srgb, var(--say) 45%, var(--panel)); }
+  .block.cap { background: color-mix(in srgb, var(--accent) 22%, var(--panel)); color:var(--fg); }
+  .block.narr { background: color-mix(in srgb, var(--say) 28%, transparent); border:1px solid color-mix(in srgb, var(--say) 70%, transparent); }
+  #wave { position:absolute; left:0; top:18px; height:calc(100% - 23px); pointer-events:none; opacity:.9; }
+  #lane-edits { background: repeating-linear-gradient(90deg, transparent 0 39px, #ffffff06 39px 40px); cursor:crosshair; }
+  .region { position:absolute; border-radius:5px; border:1px solid; padding:2px 7px; font-size:11px; font-weight:600;
+    white-space:nowrap; overflow:hidden; cursor:grab; user-select:none; }
+  .region.cut { background: color-mix(in srgb, var(--cut) 35%, transparent); border-color:var(--cut); }
+  .region.speed { background: color-mix(in srgb, var(--speed) 35%, transparent); border-color:var(--speed); }
+  .region.text { background: color-mix(in srgb, var(--text) 35%, transparent); border-color:var(--text); }
+  .region.sel { box-shadow: 0 0 0 2px var(--fg); z-index:3; }
+  .region .h { position:absolute; top:0; bottom:0; width:7px; cursor:ew-resize; }
+  .region .h.l { left:-1px; } .region .h.r { right:-1px; }
+  .shade { position:absolute; top:0; bottom:0; background:rgba(1,4,9,.62); pointer-events:none; z-index:4; }
+  .cutShade { position:absolute; top:26px; bottom:0; pointer-events:none; z-index:2;
+    background: repeating-linear-gradient(135deg, #f8514918 0 6px, transparent 6px 12px); }
+  .trimHandle { position:absolute; top:0; bottom:0; width:10px; margin-left:-5px; z-index:7; cursor:ew-resize; }
+  .trimHandle::after { content:''; position:absolute; left:3px; top:0; bottom:0; width:4px; border-radius:2px; background:var(--speed); }
+  #playhead { position:absolute; top:0; bottom:0; width:0; border-left:2px solid #ff7b72; z-index:8; pointer-events:none; }
+  #playhead::before { content:''; position:absolute; top:0; left:-7px; border:6px solid transparent; border-top:8px solid #ff7b72; }
+  #empty { padding:40px; color:var(--dim); text-align:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>democast</h1>
+  <span class="scene" id="sceneName"></span>
+  <div id="takes"></div>
+  <span class="spacer"></span>
+  <span id="status"></span>
+  <button id="undo" title="Undo (Ctrl+Z)" disabled>Undo</button>
+  <button id="redo" title="Redo (Ctrl+Shift+Z)" disabled>Redo</button>
+  <button id="save" title="Save edits (Ctrl+S)" disabled>Save</button>
+  <button id="renderOne" class="primary" title="Save, then render this format">Render</button>
+  <button id="renderAll" title="Save, then render every recorded format">Render all</button>
+</header>
+
+<main>
+  <section id="stageArea">
+    <div id="banner"></div>
+    <div id="viewer">
+      <div id="frame">
+        <video id="video" preload="auto"></video>
+        <div id="overlay"></div>
+        <div id="cutFlash"></div>
+      </div>
+    </div>
+    <div id="transport">
+      <button id="play">▶ Play</button>
+      <span class="time"><b id="tNow">0.00</b> / <span id="tDur">0.00</span></span>
+      <label title="Skip cuts, play speed-ups fast, show text: what the render will look like"><input type="checkbox" id="previewEdits" checked> Preview edits</label>
+      <span class="spacer"></span>
+    </div>
+  </section>
+  <aside>
+    <section>
+      <h2>Selection</h2>
+      <div id="inspector"><p class="muted">Drag on the <b>Edits</b> lane to add a region, or click one to edit it.</p></div>
+    </section>
+    <section>
+      <h2>Audio</h2>
+      <div class="field"><label for="voiceVol">Voice</label><input type="range" id="voiceVol" min="0" max="2" step="0.05"></div>
+      <div class="field"><label for="musicVol">Music</label><input type="range" id="musicVol" min="0" max="2" step="0.05"></div>
+      <p class="muted" id="musicNote" style="margin:0;font-size:12px"></p>
+    </section>
+    <section>
+      <h2>Warnings</h2>
+      <div id="warnings"></div>
+    </section>
+    <section>
+      <h2>Keys</h2>
+      <div class="keys">
+        <kbd>Space</kbd><span>play / pause</span>
+        <kbd>← →</kbd><span>step a frame (Shift: 1 s)</span>
+        <kbd>C</kbd><span>cut 2 s at the playhead</span>
+        <kbd>S</kbd><span>speed up 2 s at the playhead</span>
+        <kbd>T</kbd><span>text for 3 s at the playhead</span>
+        <kbd>I</kbd> <span>trim start at the playhead</span>
+        <kbd>O</kbd><span>trim end at the playhead</span>
+        <kbd>Del</kbd><span>delete the selected region</span>
+        <kbd>Alt</kbd><span>hold while dragging to stop snapping</span>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<footer>
+  <div id="tools">
+    <button class="tool cut" data-add="cut">+ Cut</button>
+    <button class="tool speed" data-add="speed">+ Speed</button>
+    <button class="tool text" data-add="text">+ Text</button>
+    <span class="sep"></span>
+    <button id="trimIn" title="Trim start at the playhead (I)">Trim in</button>
+    <button id="trimOut" title="Trim end at the playhead (O)">Trim out</button>
+    <button id="trimReset">Reset trim</button>
+    <span class="sep"></span>
+    <label>Zoom <input type="range" id="zoom" min="10" max="300" value="40"></label>
+    <span id="outInfo"></span>
+  </div>
+  <div id="scroller"><div id="tracks"></div></div>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

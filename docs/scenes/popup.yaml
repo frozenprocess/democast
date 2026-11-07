@@ -1,0 +1,7 @@
+site: http://127.0.0.1:7799/connect.html
+steps:
+  - caption: Connect your calendar
+  # click the trigger on the site; it opens the popup; click "Allow" in it, off camera
+  - browser.popup: { trigger: "#sign-in", click: "#allow" }
+  - browser.waitFor: { text: "Calendar connected" }
+  - wait: 1000

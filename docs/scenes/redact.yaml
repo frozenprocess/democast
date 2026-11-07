@@ -1,0 +1,8 @@
+site: http://127.0.0.1:7799/account.html
+redact:
+  - email                                                    # a preset
+  - { text: "Alex Morgan", with: You }                       # a literal string
+  - { regex: 'sk_live_[A-Za-z0-9]+', with: sk_live_XXXX }   # a pattern
+steps:
+  - caption: Names, emails and keys are hidden
+  - wait: 2000

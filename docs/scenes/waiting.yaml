@@ -1,0 +1,13 @@
+site: http://127.0.0.1:7799/app.html
+steps:
+  - caption: Waiting for the page, not for a timer
+  - browser.waitFor: { selector: "#results" }                 # an element is visible
+  - browser.waitFor: { text: "Read the docs" }                # text is on the page
+  - browser.click: "#accept"
+  - browser.click: "#start"
+  # a JS condition
+  - browser.waitFor: "document.querySelector('#status').textContent === 'Started'"
+  # wait until the text has stopped changing, e.g. an answer streaming in
+  - browser.waitQuiet: { ms: 800, selector: "#answer" }
+  - caption: Everything has loaded
+  - wait: 800

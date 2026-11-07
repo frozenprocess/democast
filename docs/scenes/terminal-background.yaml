@@ -1,0 +1,10 @@
+steps:
+  - caption: A server in the background
+  - term.run:
+      cmd: "python3 -u -m http.server 8099"
+      background: true
+      id: server
+  - term.waitFor: { id: server, regex: "Serving HTTP" }
+  - term.run: "curl -s localhost:8099 | head -4"
+  - wait: 800
+  - term.kill: server

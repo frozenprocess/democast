@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../schema/scene.schema.json
+# Tailground: a browser playground for Tailscale policy files. Open a guided
+# lesson, then flip the connectivity view between graph and matrix.
+# Needs: nothing (no sign-in). Changes: nothing (the lesson loads in the page only).
+
+name: tailground
+site: https://tailground.frozenspace.eu
+siteLabel: tailground.frozenspace.eu
+formats: [16x9, 9x16]
+timeout: 60000
+voice:
+  engine: kokoro
+  voice: am_michael
+  pronounce: { tailground: Tail ground, Tailscale: Tail scale }
+
+setup:
+  # The lesson list is rendered by the page once the policy engine is ready.
+  - browser.waitFor: { selector: "button::-p-text(Your first access rule)" }
+
+steps:
+  - caption: { text: "Tailground", sub: "Write and visualize Tailscale policy files in the browser" }
+  - say: "Tailground lets you write a Tailscale policy file in the browser, and see what it does as you type."
+  - caption: { text: "Pick a lesson", sub: "Each one loads a policy into the editor" }
+  - browser.highlight: { text: "Your first access rule" }
+  - say: "Each lesson loads an example policy into the editor. Let's open the first one, a simple access rule."
+  - browser.unhighlight:
+  - browser.click: "button::-p-text(Your first access rule)"
+  - wait: 1000
+  - caption: { text: "Live connectivity graph", sub: "Who can reach what, as the policy is edited" }
+  - browser.eval: "document.querySelector('.mobile-nav') && [...document.querySelectorAll('.mobile-nav button')].find(b => /graph$/i.test(b.textContent))?.click()"
+  - browser.highlight: { text: "GRAPH" }
+  - say: "This is the connectivity graph. Each node is a device or a group of devices in your network, and each line is a connection your policy allows. If a line is missing, that traffic is blocked. Edit a rule, and the graph redraws right away, so you can see the effect of a change before you apply it."
+  - browser.unhighlight:
+  - caption: { text: "Or as a matrix", sub: "Source by destination, per protocol" }
+  - browser.click: "button::-p-text(Matrix)"
+  - say: "The same information is also available as a matrix, with sources down the side and destinations across the top, for each protocol."
+  - wait: 1500                      # hold on the matrix

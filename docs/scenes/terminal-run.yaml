@@ -1,0 +1,10 @@
+terminal: { title: "~/project — bash", fontSize: 24, cps: 30 }
+steps:
+  - caption: Install and run
+  - term.run: "echo Hello from the terminal"
+  - term.run: "printf 'one\\ntwo\\nthree\\n'"
+  # show is what is typed, cmd is what runs
+  - term.run:
+      show: "mytool --demo"
+      cmd: "echo mytool is running in demo mode"
+  - wait: 800

@@ -1,0 +1,6 @@
+site: http://127.0.0.1:7799/app.html
+formats: [16x9, 9x16, 4x5, 1x1]
+steps:
+  - caption: Four formats from one scene
+  - browser.click: "#accept"
+  - wait: 1500

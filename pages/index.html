@@ -1,0 +1,40 @@
+<section class="hero">
+  <h1>democast</h1>
+  <p class="lead">Record scripted demo videos of a live website and a real terminal, side by side.</p>
+  <!--VIDEO-->
+  <p class="cta"><a class="btn" href="examples.html">See the examples</a> <a class="btn alt" href="reference.html">Read the reference</a><!--REPO_BUTTON--></p>
+</section>
+
+<section>
+  <h2>How it works</h2>
+  <p>You write a YAML scene: title cards, captions, clicks and typing in the
+  browser, commands in the terminal. democast plays it in headless Chrome,
+  runs the commands for real, records the result and encodes MP4s for social
+  media.</p>
+<pre><code>site: https://example.com/login
+steps:
+  - caption: Sign in
+  - browser.type: { selector: "#email", text: "demo@example.com" }
+  - browser.click: "button[type=submit]"
+  - term.run: "mytool --demo"</code></pre>
+</section>
+
+<section class="grid">
+  <div><h3>Nothing is mocked</h3><p>The browser panel is the actual site in its own Chrome window, and the terminal streams the output of the commands it really runs. Values flow between them: capture an address from the page, then pass it to a CLI command.</p></div>
+  <div><h3>Every format</h3><p>Landscape, square, feed portrait and vertical, at 1080p or 4K, with layouts for each and areas marked where TikTok, Reels and Shorts cover the picture.</p></div>
+  <div><h3>Narration</h3><p>Voice-over from Kokoro or VibeVoice, or any program you have, paced so each line finishes before the video moves on. Subtitles come with it.</p></div>
+  <div><h3>Edit, don't re-record</h3><p>A timeline editor trims, speeds up and adds text to a take. Sources export each window alone, for your own edit.</p></div>
+  <div><h3>Private by default</h3><p>Redact secrets wherever they appear, blur whole elements, and start from a saved signed-in profile, so no password is ever typed on camera.</p></div>
+  <div><h3>Checked before it runs</h3><p><code>democast check</code> validates a scene without recording it, and a failed step saves a screenshot of that moment.</p></div>
+</section>
+
+<section>
+  <h2>Try it</h2>
+<pre><code>npm install
+node src/cli.js examples/tailground.yaml
+node src/cli.js edit examples/tailground.yaml</code></pre>
+  <p>You need Linux or macOS, Node 20+, ffmpeg, and Chrome, Chromium or Edge.
+  The <a href="reference.html">reference</a> covers every setting and flag, and
+  the <a href="examples.html">examples</a> show every way to use it, with a
+  screenshot for most.</p>
+</section>

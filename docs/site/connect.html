@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect</title><link rel="stylesheet" href="/site.css">
+<header><b>Acme Notes</b><a href="/">Home</a><a href="/docs.html">Docs</a><a href="/app.html">App</a><a href="/account.html">Account</a></header>
+<main>
+<h1>Connected services</h1>
+<div class="card"><p>Connect your calendar to see deadlines next to your notes.</p>
+<button id="sign-in">Connect calendar</button> <span id="welcome" class="ok" style="display:none">Calendar connected</span>
+<button id="open-help" style="background:#556;margin-left:12px">Help</button></div>
+<script>
+sign_in = document.getElementById("sign-in");
+sign_in.onclick = () => window.open("/oauth.html", "oauth", "width=520,height=420");
+window.addEventListener("message", (e) => { if (e.data === "allowed") { welcome.style.display = "inline"; sign_in.style.display = "none"; } });
+document.getElementById("open-help").onclick = () => window.open("/help.html", "help", "width=560,height=420");
+</script>
+</main>

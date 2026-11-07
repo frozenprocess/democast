@@ -1,0 +1,6 @@
+steps:
+  - term.run:
+      cmd: "echo 'token: abc123'"
+      capture: { var: token, regex: 'token: (\S+)', from: stdout }
+  - term.run: "echo the token was {{token}}"
+  - wait: 800

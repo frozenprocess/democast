@@ -1,0 +1,11 @@
+site: http://127.0.0.1:7799/login.html
+siteLabel: acme.test/login
+steps:
+  - caption: Sign in
+  # type: real key events, one at a time; seed makes the pauses the same every take
+  - browser.type: { selector: "#email", text: "demo@acme.test", cps: 20, seed: 42 }
+  # fill: replaces the contents at once, like a paste
+  - browser.fill: { selector: "#password", text: "not-a-real-password" }
+  - browser.click: "button[type=submit]"
+  - browser.waitFor: { text: "Welcome back" }
+  - wait: 1000

@@ -1,0 +1,27 @@
+// The command line's flags, for util.parseArgs. Their help is in usage.js.
+
+export const OPTIONS = /** @type {const} */ ({
+  format: { type: 'string', short: 'f' },
+  out: { type: 'string', short: 'o', default: 'out' },
+  retries: { type: 'string', short: 'r', default: '0' },
+  chrome: { type: 'string' },
+  headed: { type: 'boolean' },
+  guides: { type: 'boolean' },
+  scale: { type: 'string', short: 's', default: '1' },
+  fps: { type: 'string' },
+  '4k': { type: 'boolean' },
+  smooth: { type: 'boolean' },
+  sources: { type: 'boolean' },
+  'sources-later': { type: 'boolean' },
+  jobs: { type: 'string', short: 'j' },
+  force: { type: 'boolean' },
+  voice: { type: 'string' },
+  'no-voice': { type: 'boolean' },
+  'voice-only': { type: 'boolean' },
+  'no-redact': { type: 'boolean' },
+  quiet: { type: 'boolean', short: 'q' },
+  port: { type: 'string', default: '7717' },
+  open: { type: 'boolean' },
+  profile: { type: 'string' },
+  help: { type: 'boolean', short: 'h' },
+});

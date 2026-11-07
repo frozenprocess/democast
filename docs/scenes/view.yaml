@@ -1,0 +1,9 @@
+site: http://127.0.0.1:7799/app.html
+steps:
+  - view: browser
+  - caption: First, the browser on its own
+  - browser.click: "#accept"
+  - view: term
+  - caption: Now the terminal alone
+  - term.run: "echo now only the terminal"
+  - wait: 800

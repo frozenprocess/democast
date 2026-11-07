@@ -1,0 +1,12 @@
+site: http://127.0.0.1:7799/app.html
+setup:                                  # before recording; not in the video
+  - browser.waitFor: { selector: "#results" }
+  - browser.click: "#accept"
+steps:
+  - caption: Create an item
+  - browser.type: { selector: "#name", text: "Write the docs" }
+  - browser.click: "#save"
+  - browser.waitFor: { text: "Write the docs" }
+  - wait: 1000
+teardown:                               # after each take, even a failed one
+  - browser.eval: "localStorage.clear()"

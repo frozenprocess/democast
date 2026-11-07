@@ -1,0 +1,9 @@
+terminal:  { title: "server — bash" }
+terminal2: { title: "client — bash" }
+steps:
+  - caption: A server and a client
+  - term.run: { cmd: "python3 -u -m http.server 8098", background: true, id: srv }
+  - term.waitFor: { id: srv, regex: "Serving HTTP" }
+  - term.run: { pane: 2, cmd: "curl -s -o /dev/null -w '%{http_code}\\n' localhost:8098" }
+  - wait: 800
+  - term.kill: srv

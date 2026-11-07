@@ -1,0 +1,6 @@
+site: http://127.0.0.1:7799/listener.html
+formats: [9x16]
+steps:
+  - browser.click: "#create-listener"
+  - term.run: "echo one panel at a time"
+  - wait: 800

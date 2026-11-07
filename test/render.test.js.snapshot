@@ -1,0 +1,220 @@
+exports[`renderArgs: music 1`] = `
+{
+  "args": [
+    "-v",
+    "error",
+    "-y",
+    "-i",
+    "/out/demo-16x9.raw.mkv",
+    "-stream_loop",
+    "-1",
+    "-i",
+    "/scenes/bed.mp3",
+    "-filter_complex",
+    "[0:v]split=4[vs0][vs1][vs2][vs3];[vs0]trim=start=0.250:end=3.000,setpts=(PTS-STARTPTS)/1[v0];[vs1]trim=start=3.500:end=6.000,setpts=(PTS-STARTPTS)/1[v1];[vs2]trim=start=6.000:end=9.000,setpts=(PTS-STARTPTS)/3[v2];[vs3]trim=start=9.000:end=10.000,setpts=(PTS-STARTPTS)/1[v3];[v0][v1][v2][v3]concat=n=4:v=1:a=0[vcat];[vcat]null[vout];[1:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.2,atrim=end=7.250,afade=t=in:d=1,afade=t=out:st=5.25:d=2[music];[music]anull[mix];[mix]apad,atrim=end=7.250,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[aout]",
+    "-map",
+    "[vout]",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    "30",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-t",
+    "7.250",
+    "-movflags",
+    "+faststart",
+    "/out/demo-16x9.mp4"
+  ],
+  "texts": []
+}
+`;
+
+exports[`renderArgs: narration 1`] = `
+{
+  "args": [
+    "-v",
+    "error",
+    "-y",
+    "-i",
+    "/out/demo-16x9.raw.mkv",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/01.wav",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/02.wav",
+    "-filter_complex",
+    "[0:v]split=4[vs0][vs1][vs2][vs3];[vs0]trim=start=0.250:end=3.000,setpts=(PTS-STARTPTS)/1[v0];[vs1]trim=start=3.500:end=6.000,setpts=(PTS-STARTPTS)/1[v1];[vs2]trim=start=6.000:end=9.000,setpts=(PTS-STARTPTS)/3[v2];[vs3]trim=start=9.000:end=10.000,setpts=(PTS-STARTPTS)/1[v3];[v0][v1][v2][v3]concat=n=4:v=1:a=0[vcat];[vcat]null[vout];[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay=500:all=1[n4];[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay=4000:all=1[n5];[n4][n5]amix=inputs=2:normalize=0:dropout_transition=0,volume=1.08,apad,atrim=end=10.000,asplit=4[as0][as1][as2][as3];[as0]atrim=start=0.250:end=3.000,asetpts=PTS-STARTPTS[a6];[as1]atrim=start=3.500:end=6.000,asetpts=PTS-STARTPTS[a7];[as2]atrim=start=6.000:end=9.000,asetpts=PTS-STARTPTS,atempo=2,atempo=1.5[a8];[as3]atrim=start=9.000:end=10.000,asetpts=PTS-STARTPTS[a9];[a6][a7][a8][a9]concat=n=4:v=0:a=1[voice];[voice]anull[mix];[mix]apad,atrim=end=7.250,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[aout]",
+    "-map",
+    "[vout]",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    "30",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-t",
+    "7.250",
+    "-movflags",
+    "+faststart",
+    "/out/demo-16x9.mp4"
+  ],
+  "texts": []
+}
+`;
+
+exports[`renderArgs: narration and music 1`] = `
+{
+  "args": [
+    "-v",
+    "error",
+    "-y",
+    "-i",
+    "/out/demo-16x9.raw.mkv",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/01.wav",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/02.wav",
+    "-stream_loop",
+    "-1",
+    "-i",
+    "/scenes/bed.mp3",
+    "-filter_complex",
+    "[0:v]split=4[vs0][vs1][vs2][vs3];[vs0]trim=start=0.250:end=3.000,setpts=(PTS-STARTPTS)/1[v0];[vs1]trim=start=3.500:end=6.000,setpts=(PTS-STARTPTS)/1[v1];[vs2]trim=start=6.000:end=9.000,setpts=(PTS-STARTPTS)/3[v2];[vs3]trim=start=9.000:end=10.000,setpts=(PTS-STARTPTS)/1[v3];[v0][v1][v2][v3]concat=n=4:v=1:a=0[vcat];[vcat]null[vout];[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay=500:all=1[n4];[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay=4000:all=1[n5];[n4][n5]amix=inputs=2:normalize=0:dropout_transition=0,volume=0.9,apad,atrim=end=10.000,asplit=4[as0][as1][as2][as3];[as0]atrim=start=0.250:end=3.000,asetpts=PTS-STARTPTS[a6];[as1]atrim=start=3.500:end=6.000,asetpts=PTS-STARTPTS[a7];[as2]atrim=start=6.000:end=9.000,asetpts=PTS-STARTPTS,atempo=2,atempo=1.5[a8];[as3]atrim=start=9.000:end=10.000,asetpts=PTS-STARTPTS[a9];[a6][a7][a8][a9]concat=n=4:v=0:a=1[voice];[3:a]aresample=48000,aformat=channel_layouts=stereo,volume=0.3,atrim=end=7.250,afade=t=in:d=1,afade=t=out:st=5.25:d=2[music];[voice]asplit[v1][v2];[music][v2]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=400[ducked];[ducked][v1]amix=inputs=2:normalize=0:duration=first[mix];[mix]apad,atrim=end=7.250,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[aout]",
+    "-map",
+    "[vout]",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    "30",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-t",
+    "7.250",
+    "-movflags",
+    "+faststart",
+    "/out/demo-16x9.mp4"
+  ],
+  "texts": []
+}
+`;
+
+exports[`renderArgs: no narration 1`] = `
+{
+  "args": [
+    "-v",
+    "error",
+    "-y",
+    "-i",
+    "/out/demo-16x9.raw.mkv",
+    "-filter_complex",
+    "[0:v]split=4[vs0][vs1][vs2][vs3];[vs0]trim=start=0.250:end=3.000,setpts=(PTS-STARTPTS)/1[v0];[vs1]trim=start=3.500:end=6.000,setpts=(PTS-STARTPTS)/1[v1];[vs2]trim=start=6.000:end=9.000,setpts=(PTS-STARTPTS)/3[v2];[vs3]trim=start=9.000:end=10.000,setpts=(PTS-STARTPTS)/1[v3];[v0][v1][v2][v3]concat=n=4:v=1:a=0[vcat];[vcat]null[vout]",
+    "-map",
+    "[vout]",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    "30",
+    "-t",
+    "7.250",
+    "-movflags",
+    "+faststart",
+    "/out/demo-16x9.mp4"
+  ],
+  "texts": []
+}
+`;
+
+exports[`renderArgs: text overlay 1`] = `
+{
+  "args": [
+    "-v",
+    "error",
+    "-y",
+    "-i",
+    "/out/demo-16x9.raw.mkv",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/01.wav",
+    "-protocol_whitelist",
+    "file",
+    "-i",
+    "/out/demo-16x9.narration/02.wav",
+    "-filter_complex",
+    "[0:v]split=4[vs0][vs1][vs2][vs3];[vs0]trim=start=0.250:end=3.000,setpts=(PTS-STARTPTS)/1[v0];[vs1]trim=start=3.500:end=6.000,setpts=(PTS-STARTPTS)/1[v1];[vs2]trim=start=6.000:end=9.000,setpts=(PTS-STARTPTS)/3[v2];[vs3]trim=start=9.000:end=10.000,setpts=(PTS-STARTPTS)/1[v3];[v0][v1][v2][v3]concat=n=4:v=1:a=0[vcat];[vcat]drawtext=fontfile='/fonts/Sans-Bold.ttf':textfile='/tmp/democast-x/text0.txt':fontsize=49:fontcolor=white:box=1:boxcolor=black@0.7:boxborderw=25:x=40+(w-40-40-tw)/2:y=64:enable='between(t,4.250,5.583)'[vout];[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay=500:all=1[n4];[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay=4000:all=1[n5];[n4][n5]amix=inputs=2:normalize=0:dropout_transition=0,volume=0.9,apad,atrim=end=10.000,asplit=4[as0][as1][as2][as3];[as0]atrim=start=0.250:end=3.000,asetpts=PTS-STARTPTS[a6];[as1]atrim=start=3.500:end=6.000,asetpts=PTS-STARTPTS[a7];[as2]atrim=start=6.000:end=9.000,asetpts=PTS-STARTPTS,atempo=2,atempo=1.5[a8];[as3]atrim=start=9.000:end=10.000,asetpts=PTS-STARTPTS[a9];[a6][a7][a8][a9]concat=n=4:v=0:a=1[voice];[voice]anull[mix];[mix]apad,atrim=end=7.250,loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[aout]",
+    "-map",
+    "[vout]",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "slow",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-r",
+    "30",
+    "-map",
+    "[aout]",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "160k",
+    "-t",
+    "7.250",
+    "-movflags",
+    "+faststart",
+    "/out/demo-16x9.mp4"
+  ],
+  "texts": [
+    {
+      "file": "/tmp/democast-x/text0.txt",
+      "text": "Fast: 3x"
+    }
+  ]
+}
+`;

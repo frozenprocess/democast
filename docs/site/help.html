@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>Help</title><link rel="stylesheet" href="/site.css">
+<main><h1>Help</h1><div class="card"><p id="tip">Tip 1: press <code>n</code> to add a note.</p><button id="next">Next tip</button></div></main>
+<script>
+const tips = ["Tip 2: search with <code>/</code>.", "Tip 3: notes are plain text files."]; let i = 0;
+document.getElementById("next").onclick = () => { if (i < tips.length) document.getElementById("tip").innerHTML = tips[i++]; };
+</script>

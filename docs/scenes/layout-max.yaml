@@ -1,0 +1,6 @@
+site: http://127.0.0.1:7799/docs.html
+formats: [9x16]
+layout: max           # a one-panel scene fills the frame (no room for captions)
+steps:
+  - browser.scrollTo: "#install"
+  - wait: 1000

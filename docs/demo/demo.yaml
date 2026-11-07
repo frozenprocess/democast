@@ -1,0 +1,34 @@
+# The demo video on the project's web page (make demo-video). It films the
+# demo site in docs/site/, so it needs no account and looks the same every time.
+name: democast-demo
+site: http://127.0.0.1:7799/login.html
+siteLabel: acme.test/login
+terminal: { title: "~/project — bash", fontSize: 24, cps: 30 }
+steps:
+  - card:
+      title: democast
+      sub: "Scripted demo videos of a live website and a real terminal"
+      pills: [One YAML file, Real browser, Real commands]
+  - wait: 2500
+  - hideCard: {}
+  - caption: Sign in
+  - browser.type: { selector: "#email", text: "demo@acme.test", cps: 20, seed: 42 }
+  - browser.fill: { selector: "#password", text: "not-a-real-password" }
+  - browser.click: "button[type=submit]"
+  - browser.waitFor: { text: "Welcome back" }
+  - wait: 800
+  - browser.open: { url: "http://127.0.0.1:7799/listener.html", label: "acme.test/listener" }
+  - caption: A value from the browser, used in the terminal
+  - browser.click: "#create-listener"
+  - browser.capture: { var: addr, selector: "#listen-addr" }
+  - term.run: { show: "send {{addr}}", cmd: "echo sending to {{addr}}" }
+  - browser.fill: { selector: "#send-addr", text: "{{addr}}" }
+  - browser.click: "#send"
+  - wait: 800
+  - caption: Nothing is mocked
+  - wait: 1200
+  - card:
+      title: Write the scene. Record it. Edit it.
+      link: YAML in, MP4s out
+      pills: [16:9, 1:1, 4:5, 9:16]
+  - wait: 3000

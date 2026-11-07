@@ -1,0 +1,10 @@
+site: http://127.0.0.1:7799/listener.html
+steps:
+  - caption: A value from the browser, used in the terminal
+  - browser.click: "#create-listener"
+  - browser.capture: { var: addr, selector: "#listen-addr" }
+  # {{addr}} in `show` is pasted instantly instead of typed
+  - term.run: { show: "send {{addr}}", cmd: "echo sending to {{addr}}" }
+  - browser.fill: { selector: "#send-addr", text: "{{addr}}" }
+  - browser.click: "#send"
+  - wait: 800

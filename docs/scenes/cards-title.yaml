@@ -1,0 +1,8 @@
+site: http://127.0.0.1:7799/
+steps:
+  # A card as the first step is shown before recording begins
+  - card:
+      image: ../../examples/tailground.png
+      title: Meet Acme Notes
+      sub: "Notes that stay on your machine"
+  - wait: 2500

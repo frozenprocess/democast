@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>App</title><link rel="stylesheet" href="/site.css">
+<header><b>Acme Notes</b><a href="/">Home</a><a href="/docs.html">Docs</a><a href="/app.html">App</a><a href="/account.html">Account</a></header>
+<main>
+<div id="banner">We use cookies. <button id="accept" style="margin-left:12px">Accept</button></div>
+<h1>Items</h1>
+<div class="card"><label for="name">New item</label><input id="name" autocomplete="off"><button id="save">Save</button>
+<button id="start" style="background:#556">Start job</button> <span id="status" class="ok"></span></div>
+<div id="results" class="card" style="display:none"><b>Results</b><ul id="list"></ul></div>
+<div class="card"><b>Assistant</b><p id="answer" class="muted"></p></div>
+<script>
+// getElementById throughout: bare ids like "status" and "name" are window properties.
+const $ = (id) => document.getElementById(id);
+const items = ["Buy milk", "Read the docs"];
+function show() { $("list").innerHTML = items.map((t) => "<li>" + t + "</li>").join(""); $("results").style.display = "block"; }
+setTimeout(show, 700);
+$("save").onclick = () => { if ($("name").value) { items.push($("name").value); $("name").value = ""; show(); } };
+$("start").onclick = () => { $("status").textContent = "Starting…"; setTimeout(() => $("status").textContent = "Started", 600); };
+$("accept").onclick = () => $("banner").remove();
+const words = "Notes sync across your machines, encrypted end to end, and stay readable as plain text.".split(" ");
+let i = 0; const t = setInterval(() => { $("answer").textContent += (i ? " " : "") + words[i++]; if (i >= words.length) clearInterval(t); }, 150);
+</script>
+</main>

@@ -1,0 +1,6 @@
+site: http://127.0.0.1:7799/docs.html
+steps:
+  - browser.scrollTo: "#install"                           # smooth-scroll, upper part of the view
+  - browser.highlight: { text: "npm install acme-notes", selector: "#install" }
+  - caption: Highlight a passage
+  - wait: 2000
