@@ -32,10 +32,10 @@ test('tailnet: blurs fun names, even half typed, not .ts file names', { skip: !c
     await p.evaluateOnNewDocument(pageRedactor, redactRules(['tailnet']));
     await p.goto('data:text/html,' + encodeURIComponent(`
       <ul><li>user-service.ts</li><li>build-tools.ts</li></ul>
-      <p>Reach it at tailXXXX.ts.net now</p>
+      <p>Reach it at happy-otter.ts.net now</p>
       <p>Streaming: hello-share.ts.n</p>`));
     const hl = await p.evaluate(() => [...CSS.highlights.get('democast-redact')].map((r) => r.toString()).sort());
-    assert.deepEqual(hl, ['tailXXXX.ts.net', 'hello-share.ts.n']);
+    assert.deepEqual(hl, ['happy-otter.ts.net', 'hello-share.ts.n']);
   } finally {
     await b.close();
   }

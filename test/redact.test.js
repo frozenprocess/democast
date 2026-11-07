@@ -38,7 +38,7 @@ test('bad entries are rejected', () => {
 
 test('tailnet: fun names too, not the host in front', () => {
   const rules = redactRules(['tailnet'], (s) => s);
-  assert.equal(redactText(rules, 'some-probe.tail735850.ts.net. up'), 'some-probe.tailXXXX.ts.net. up');
+  assert.equal(redactText(rules, 'some-probe.happy-otter.ts.net. up'), 'some-probe.tailXXXX.ts.net. up');
   assert.equal(redactText(rules, 'hello-share.tail735850.ts.net'), 'hello-share.tailXXXX.ts.net');
   assert.equal(redactText(rules, 'some-probe up'), 'some-probe up');
 });

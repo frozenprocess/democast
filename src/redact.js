@@ -13,7 +13,7 @@
 export const PRESETS = {
   email: { regex: String.raw`[\w.+-]+@[\w-]+(?:\.[\w-]+)+`, partial: String.raw`[\w.+-]+@[\w.-]*`, with: 'you@example.com' },
   // A tailnet's DNS name: tailXXXX.ts.net, or a "fun name" like
-  // tailXXXX.ts.net (two words; while typed, once ".ts." follows: a
+  // happy-otter.ts.net (two words; while typed, once ".ts." follows: a
   // file name such as user-service.ts looks just like it up to there).
   tailnet: {
     regex: String.raw`\b(?:tail[0-9a-f]{4,}|[a-z]+-[a-z]+)\.ts\.net\b`,
